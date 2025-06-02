@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 
 // Word bank for generating random sets
 const wordBank = [
-  'the', 'be', 'to', 'of', 'and', 'a', 'in', 'that', 'have', 'i',
+  'the', 'be', 'to', 'of', 'and', 'a', 'in', 'that', 'have',
   'it', 'for', 'not', 'on', 'with', 'he', 'as', 'you', 'do', 'at',
   'this', 'but', 'his', 'by', 'from', 'they', 'we', 'say', 'her', 'she',
   'or', 'an', 'will', 'my', 'one', 'all', 'would', 'there', 'their', 'what',
@@ -11,7 +11,8 @@ const wordBank = [
   'people', 'into', 'year', 'your', 'good', 'some', 'could', 'them', 'see', 'other',
   'than', 'then', 'now', 'look', 'only', 'come', 'its', 'over', 'think', 'also',
   'back', 'after', 'use', 'two', 'how', 'our', 'work', 'first', 'well', 'way',
-  'even', 'new', 'want', 'because', 'any', 'these', 'give', 'day', 'most', 'us'
+  'even', 'new', 'want', 'because', 'any', 'these', 'give', 'day', 'most', 'us', 'Qwabiz',
+  'Elon', 'Musk','yo', 'technology', 'Ghana','USA','dad', 'mom', 'weather','forest', 'programming', 'arduino', 'spaceX', 
 ];
 
 const TypingSimulator = () => {
@@ -142,7 +143,7 @@ const TypingSimulator = () => {
       setStatus('typing');
     }
 
-    if (status === 'finished' && e.key === 'Enter') {
+    if (status === 'Completed' && e.key === 'Enter') {
       e.preventDefault();
       resetTest();
       return;
@@ -198,7 +199,7 @@ const TypingSimulator = () => {
       setCurrentInput('');
       
       if (currentWordIndex + 1 >= words.length) {
-        setStatus('finished');
+        setStatus('Completed');
       }
       return;
     }
@@ -240,7 +241,7 @@ const TypingSimulator = () => {
           if (isCurrentWord) {
             if (charIndex < typedWord.length) {
               className = typedWord[charIndex] === char
-                ? 'text-yellow-400'
+                ? 'text-green-400'
                 : 'text-red-400';
             } else if (charIndex === typedWord.length) {
               className = 'relative text-gray-500';
@@ -248,7 +249,7 @@ const TypingSimulator = () => {
           } else if (isCompletedWord && completedWordData) {
             const typedChar = completedWordData.typed[charIndex];
             if (typedChar === char) {
-              className = 'text-yellow-400';
+              className = 'text-green-400';
             } else if (typedChar) {
               className = 'text-red-400';
             } else {
@@ -260,7 +261,7 @@ const TypingSimulator = () => {
             <span key={charIndex} className={className}>
               {char}
               {isCurrentWord && charIndex === typedWord.length && (
-                <span className="absolute -top-0.5 left-0 w-0.5 h-7 bg-yellow-400 animate-pulse"></span>
+                <span className="absolute -top-0.5 left-0 w-0.5 h-7 bg-green-400 animate-pulse"></span>
               )}
             </span>
           );
@@ -272,7 +273,7 @@ const TypingSimulator = () => {
               {typedWord.slice(word.length)}
             </span>
             <span className="relative">
-              <span className="absolute -top-0.5 left-0 w-0.5 h-7 bg-yellow-400 animate-pulse"></span>
+              <span className="absolute -top-0.5 left-0 w-0.5 h-7 bg-green-400 animate-pulse"></span>
             </span>
           </>
         )}
@@ -291,36 +292,36 @@ const TypingSimulator = () => {
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-800">
         <div className="flex items-center space-x-2">
-          <div className="flex items-center justify-center w-8 h-8 text-sm font-bold text-black bg-yellow-500 rounded">
+          <div className="flex items-center justify-center w-8 h-8 text-sm font-bold text-black bg-green-600 rounded">
             ZT
           </div>
-          <span className="text-lg font-light text-gray-300">Zamar⚡Type</span>
+          <span className="text-lg font-light text-gray-300 font-jetbrains">Zamar⚡Type</span>
         </div>
       </div>
 
       {/* Main content */}
-      <div className="flex items-center justify-center flex-1 p-8">
+      <div className="flex items-center justify-center flex-1 p-8 font-jetbrains">
         <div className="w-full max-w-4xl">
         
           {/* Stats display */}
           <div className="flex items-end justify-center mb-8 space-x-8">
             <div className="text-left">
-              <div className="text-6xl font-light leading-none text-yellow-400">
+              <div className="text-6xl font-light leading-none text-green-500">
                 {calculateWPM()}
               </div>
-              <div className="mt-1 text-sm text-gray-400">wpm</div>
+              <div className="mt-1 text-center text-xl text-gray-400 ">WPM</div>
             </div>
             <div className="text-left">
-              <div className="text-6xl font-light leading-none text-yellow-400">
+              <div className="text-6xl font-light leading-none text-green-400">
                 {calculateAccuracy()}%
               </div>
-              <div className="mt-1 text-sm text-gray-400">acc</div>
+              <div className="mt-1 text-xl text-gray-400 text-center">ACCURACY</div>
             </div>
             <div className="text-left">
               <div className={`text-6xl font-light leading-none ${calculateGrade().color}`}>
                 {calculateGrade().grade}
               </div>
-              <div className="mt-1 text-sm text-gray-400">grade</div>
+              <div className="mt-1 text-xl text-gray-400 text-center">GRADE</div>
             </div>
           </div>
 
@@ -376,9 +377,9 @@ const TypingSimulator = () => {
             {/* Restart button */}
             <button
               onClick={resetTest}
-              className="px-4 py-2 mt-4 text-sm text-gray-400 transition-colors hover:text-yellow-400"
+              className="px-4 py-2 mt-4 text-md text-gray-400 transition-colors hover:text-green-900 rounded-full bg-green-600"
             >
-              restart test
+              Restart Test
             </button>
           </div>
 
