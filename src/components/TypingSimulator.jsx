@@ -10,7 +10,7 @@ const TypingSimulator = () => {
   const [startTime, setStartTime] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
 
-  // Test customization
+  // Test customization 
   const [testMode, setTestMode] = useState('time'); // 'time' or 'words'
   const [timeLimit, setTimeLimit] = useState(60); // in seconds
   const [wordCount, setWordCount] = useState(50);
