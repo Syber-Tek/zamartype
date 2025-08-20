@@ -1,14 +1,11 @@
-import './App.css'
-import TypingSimulator from './components/TypingSimulator'
-
+import TypingSimulator from "./components/TypingSimulator";
 function App() {
-  return (
-    <>
-      
-      <TypingSimulator/>
-
-    </>
-  )
+	return (
+		<>
+	
+			<TypingSimulator/>
+		</>
+	);
 }
 
-export default App
+export default App;

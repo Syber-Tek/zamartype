@@ -1,27 +1,45 @@
-// WordBanks.js (after renaming from WordBank.jsx and confirming content structure)
-
-const wordBanks = {
+const WordBanks = {
   common: [
-    "the", "be", "to", "of", "and", "a", "in", "that", "have", "I",
-    "it", "for", "not", "on", "with", "he", "as", "you", "do", "at",
-    "this", "but", "his", "by", "from", "they", "we", "say", "her", "she",
-    "or", "will", "my", "one", "all", "would", "there", "their", "what", "so",
-    "up", "out", "if", "about", "who", "get", "which", "go", "me", "when",
-    "make", "can", "like", "time", "no", "just", "him", "know", "take", "people",
-    "into", "year", "your", "good", "some", "could", "them", "see", "other", "than",
-    "then", "now", "look", "only", "come", "its", "over", "think", "also", "back",
-    "after", "use", "two", "how", "our", "work", "first", "well", "way", "even",
-    "new", "want", "because", "any", "these", "give", "day", "most", "us"
-  ],
-  numbers: [
-    "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-    "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20",
-    "100", "1000", "million", "billion"
-  ],
-  punctuation: [
-    ".", ",", ";", ":", "!", "?", "'", "\"", "(", ")",
-    "-", "_", "/", "@", "#", "$", "%", "&", "*"
+   "the", "of", "to", "and", "a", "in", "is", "it", "you", "that", "he", "was", "for", "on", "are", "as", "with",
+    "his", "they", "i", "at", "be", "this", "have", "from", "or", "one", "had", "by", "word", "but", "not", "what",
+    "all", "were", "we", "when", "your", "can", "said", "there", "each", "which", "she", "do", "how", "their", "if",
+    "will", "up", "other", "about", "out", "many", "then", "them", "these", "so", "some", "her", "would", "make",
+    "like", "into", "him", "has", "two", "more", "go", "no", "way", "could", "my", "than", "first", "been", "call",
+    "who", "its", "now", "find", "long", "down", "day", "did", "get", "come", "made", "may", "part", "over", "new",
+    "sound", "take", "only", "little", "work", "know", "place", "year", "live", "me", "back", "give", "most", "very",
+    "after", "thing", "our", "just", "name", "good", "sentence", "man", "think", "say", "great", "where", "help",
+    "through", "much", "before", "line", "right", "too", "mean", "old", "any", "same", "tell", "boy", "follow",
+    "came", "want", "show", "also", "around", "form", "three", "small", "set", "put", "end", "why", "again", "turn",
+    "here", "off", "went", "old", "number", "great", "tell", "men", "say", "small", "every", "found", "still",
+    "between", "should", "home", "big", "give", "air", "line", "set", "own", "under", "read", "last", "never", "us",
+    "left", "end", "along", "while", "might", "next", "sound", "below", "saw", "something", "thought", "both", "few",
+    "those", "always", "looked", "show", "large", "often", "together", "asked", "house", "don't", "world", "going",
+    "school", "important", "until", "form", "food", "keep", "children", "feet", "land", "side", "without", "boy",
+    "once", "animal", "life", "enough", "took", "sometimes", "four", "head", "above", "kind", "began", "almost",
+    "live", "page", "got", "earth", "need", "far", "hand", "high", "mother", "light", "country", "father", "let",
+    "night", "picture", "being", "study", "second", "soon", "story", "since", "white", "ever", "paper", "hard",
+    "near", "better", "best", "across", "during", "today", "however", "sure", "knew", "try", "told", "young", "sun",
+    "whole", "hear", "example", "heard", "several", "change", "answer", "room", "sea", "against", "top", "turned",
+    "learn", "point", "city", "play", "toward", "five", "himself", "usually", "money", "seen", "car", "morning",
+    "body", "upon", "family", "later", "turn", "move", "face", "door", "cut", "done", "group", "true", "leave",
+    "wife", "held", "longer", "horse", "within", "main", "red", "hot", "anything", "appear", "brought", "heat",
+    "nothing", "except", "hit", "glad", "include", "machine", "happen", "special", "ago", "musical", "spoke",
+    "shape", "deep", "thousands", "yes", "clear", "yet", "government", "filled", "fire", "full", "force", "blue",
+    "object", "decide", "surface", "behind", "among", "everything", "plant", "keep", "tree", "start", "eye",
+    "under", "saw", "close", "seem", "open", "begin", "run", "walk", "grew", "river", "carry", "state", "book",
+    "hear", "stop", "second", "miss", "idea", "eat", "watch", "really", "girl", "mountain", "talk", "list", "song",
+    "time", "person", "year", "way", "day", "thing", "man", "world", "life", "hand", "part", "child", "eye",
+    "woman", "place", "work", "week", "case", "point", "company", "number", "group", "problem", "fact",
+    "good", "new", "first", "last", "long", "great", "little", "own", "other", "old", "right", "big", "high",
+    "different", "small", "large", "next", "early", "young", "important", "few", "public", "bad", "same",
+    "able", "human", "local", "sure", "without", "free", "minute", "account", "area", "national", "today",
+    "social", "though", "water", "history", "often", "way", "well", "art", "fact", "piece", "land", "nothing",
+    "course", "date", "line", "product", "end", "activity", "red", "top", "whole", "white", "matter", "kind",
+    "everything", "department", "story", "lot", "right", "study", "book", "business", "issue", "side", "kind",
+    "head", "far", "black", "long", "both", "little", "house", "yes", "after", "since", "long", "provide",
+    "service", "around", "friend", "important", "father", "sit", "away", "until", "power", "hour", "game",
+    "often", "yet", "line", "political", "end", "among", "ever", "stand", "lose", "however", "member", "pay"
   ]
 };
 
-export default wordBanks; // This is the correct export for your import statement
+export default WordBanks; 
