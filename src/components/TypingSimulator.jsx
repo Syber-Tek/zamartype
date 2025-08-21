@@ -20,6 +20,8 @@ const TypingSimulator = () => {
 	const [startTime, setStartTime] = useState(null);
 	const textContainerRef = useRef(null);
 	const currentWordRef = useRef(null);
+	const [isBackspaceHeld, setIsBackspaceHeld] = useState(false);
+	const [, setBackspaceTimer] = useState(null);
 	const [scrollOffset, setScrollOffset] = useState(0);
 	const [stats, setStats] = useState({
 		wpm: 0,
@@ -70,12 +72,12 @@ const TypingSimulator = () => {
 	}, []);
 
 	// Play typing sound
-	const playTypeSound = () => {
+	const playTypeSound = useCallback(() => {
 		if (audioRef.current) {
 			audioRef.current.currentTime = 0;
 			audioRef.current.play().catch(() => {});
 		}
-	};
+	}, []);
 
 	// Reset test
 	const resetTest = useCallback(() => {
@@ -152,6 +154,51 @@ const TypingSimulator = () => {
 	}, [isActive, timeLeft, isCompleted, testMode]);
 
 	// Handle key press
+
+	// Enhanced backspace handler
+	const handleBackspace = useCallback(() => {
+		// If we're at the very beginning, do nothing
+		if (currentWordIndex === 0 && currentCharIndex === 0) {
+			return;
+		}
+
+		const newCharStates = [...charStates];
+
+		// If we're at the beginning of current word, go back to previous word
+		if (currentCharIndex === 0 && currentWordIndex > 0) {
+			// Move to previous word's end
+			const previousWordIndex = currentWordIndex - 1;
+			const previousWordLength = words[previousWordIndex].length;
+
+			setCurrentWordIndex(previousWordIndex);
+			setCurrentCharIndex(previousWordLength);
+
+			// Reconstruct user input for the previous word
+			setUserInput(words[previousWordIndex]);
+
+			return;
+		}
+
+		// Normal character deletion within current word
+		if (currentCharIndex > 0) {
+			// Remove character from user input
+			setUserInput((prev) => prev.slice(0, -1));
+
+			// Move cursor back
+			const newCharIndex = currentCharIndex - 1;
+			setCurrentCharIndex(newCharIndex);
+
+			// Reset character state to untyped
+			if (
+				newCharStates[currentWordIndex] &&
+				newCharStates[currentWordIndex][newCharIndex]
+			) {
+				newCharStates[currentWordIndex][newCharIndex].status = "untyped";
+				setCharStates(newCharStates);
+			}
+		}
+	}, [currentWordIndex, currentCharIndex, charStates, words]);
+
 	const handleKeyPress = (e) => {
 		if (isCompleted || showResults) return;
 
@@ -163,7 +210,7 @@ const TypingSimulator = () => {
 			setStartTime(Date.now());
 		}
 
-		// Play sound
+		// Play sound for regular characters
 		if (char.length === 1) {
 			playTypeSound();
 		}
@@ -184,38 +231,72 @@ const TypingSimulator = () => {
 				: "incorrect";
 			setWordStates(newWordStates);
 
-			// Update character states
+			// Update character states - PRESERVE existing states, don't overwrite
 			const newCharStates = [...charStates];
+
+			// Only update character states that haven't been set yet
+			// This preserves the real-time feedback from typing
 			for (let i = 0; i < currentWord.length; i++) {
 				if (i < typedWord.length) {
-					newCharStates[currentWordIndex][i].status =
-						currentWord[i] === typedWord[i] ? "correct" : "incorrect";
+					// Only update if the character state doesn't already exist (shouldn't happen in normal flow)
+					// The character states should already be set from real-time typing
+					if (
+						!newCharStates[currentWordIndex][i] ||
+						newCharStates[currentWordIndex][i].status === "untyped"
+					) {
+						newCharStates[currentWordIndex][i] = {
+							status: currentWord[i] === typedWord[i] ? "correct" : "incorrect",
+						};
+					}
 				} else {
-					newCharStates[currentWordIndex][i].status = "missing";
+					// Mark missing characters (when typed word is shorter than target word)
+					newCharStates[currentWordIndex][i] = {
+						status: "missing",
+					};
 				}
 			}
+
+			// Handle extra characters (when typed word is longer than target word)
+			// These should already be marked as incorrect from real-time typing, but let's ensure consistency
+			for (let i = currentWord.length; i < typedWord.length; i++) {
+				if (!newCharStates[currentWordIndex][i]) {
+					newCharStates[currentWordIndex][i] = {
+						status: "incorrect",
+					};
+				}
+			}
+
 			setCharStates(newCharStates);
 
-			// Update stats
-			//   const correctCharsInWord = Math.min(typedWord.length, currentWord.length);
-			const correctCount = typedWord
-				.split("")
-				.reduce(
-					(count, char, i) =>
-						i < currentWord.length && char === currentWord[i]
-							? count + 1
-							: count,
-					0
-				);
+			// Update stats - count based on actual character states, not word correctness
+			let correctCount = 0;
+			let incorrectCount = 0;
+			let totalCount = Math.max(typedWord.length, currentWord.length);
+
+			// Count correct characters
+			for (let i = 0; i < Math.min(typedWord.length, currentWord.length); i++) {
+				if (typedWord[i] === currentWord[i]) {
+					correctCount++;
+				} else {
+					incorrectCount++;
+				}
+			}
+
+			// Add missing characters as incorrect
+			if (currentWord.length > typedWord.length) {
+				incorrectCount += currentWord.length - typedWord.length;
+			}
+
+			// Add extra characters as incorrect
+			if (typedWord.length > currentWord.length) {
+				incorrectCount += typedWord.length - currentWord.length;
+			}
 
 			setStats((prev) => ({
 				...prev,
 				correctChars: prev.correctChars + correctCount,
-				incorrectChars:
-					prev.incorrectChars +
-					(Math.max(typedWord.length, currentWord.length) - correctCount),
-				totalChars:
-					prev.totalChars + Math.max(typedWord.length, currentWord.length),
+				incorrectChars: prev.incorrectChars + incorrectCount,
+				totalChars: prev.totalChars + totalCount,
 				correctWords: prev.correctWords + (isCorrect ? 1 : 0),
 				incorrectWords: prev.incorrectWords + (isCorrect ? 0 : 1),
 			}));
@@ -237,24 +318,57 @@ const TypingSimulator = () => {
 				setIsActive(false);
 				setShowResults(true);
 			}
-		} else if (char === "Backspace") {
-			if (userInput.length > 0) {
-				playTypeSound();
-				setUserInput((prev) => prev.slice(0, -1));
-				setCurrentCharIndex((prev) => Math.max(0, prev - 1));
+		} // Updated backspace handling in handleKeyPress
+		else if (char === "Backspace") {
+			e.preventDefault();
 
-				// Update character state
-				const newCharStates = [...charStates];
-				if (
-					currentCharIndex > 0 &&
-					currentCharIndex <= words[currentWordIndex].length
-				) {
-					newCharStates[currentWordIndex][currentCharIndex - 1].status =
-						"untyped";
-					setCharStates(newCharStates);
-				}
+			// Play sound once for the initial press
+			playTypeSound();
+
+			// Execute the backspace action
+			handleBackspace();
+
+			if (!isBackspaceHeld) {
+				setIsBackspaceHeld(true);
+
+				// Set up a delay before starting rapid deletion
+				const initialDelay = setTimeout(() => {
+					// Set up interval for held backspace (without sound)
+					const backspaceInterval = setInterval(() => {
+						handleBackspace(); // No sound here - only the logic
+					}, 75);
+
+					setBackspaceTimer(backspaceInterval);
+
+					// Clear interval when key is released
+					const handleKeyUp = (upEvent) => {
+						if (upEvent.key === "Backspace") {
+							clearInterval(backspaceInterval);
+							clearTimeout(initialDelay);
+							setIsBackspaceHeld(false);
+							setBackspaceTimer(null);
+							document.removeEventListener("keyup", handleKeyUp);
+						}
+					};
+
+					document.addEventListener("keyup", handleKeyUp);
+				}, 300); // 300ms delay before starting rapid deletion
+
+				// Handle key release during initial delay
+				const handleInitialKeyUp = (upEvent) => {
+					if (upEvent.key === "Backspace") {
+						clearTimeout(initialDelay);
+						setIsBackspaceHeld(false);
+						document.removeEventListener("keyup", handleInitialKeyUp);
+					}
+				};
+
+				document.addEventListener("keyup", handleInitialKeyUp);
 			}
 		} else if (char.length === 1 && char.match(/[a-zA-Z0-9.,!?;:'"()-]/)) {
+			// Reset backspace held state for any other key
+			setIsBackspaceHeld(false);
+
 			setUserInput((prev) => prev + char);
 			setCurrentCharIndex((prev) => prev + 1);
 
@@ -321,24 +435,24 @@ const TypingSimulator = () => {
 		});
 	}, [currentWordIndex]);
 
-// Reset scroll when test resets
-useEffect(() => {
-	if (currentWordIndex === 0 && currentCharIndex === 0) {
-		setScrollOffset(0);
-	}
-}, [currentWordIndex, currentCharIndex]);
+	// Reset scroll when test resets
+	useEffect(() => {
+		if (currentWordIndex === 0 && currentCharIndex === 0) {
+			setScrollOffset(0);
+		}
+	}, [currentWordIndex, currentCharIndex]);
 
-const finalStats = calculateFinalStats();
-const displayStats = showResults
-	? finalStats
-	: {
-			wpm: 0,
-			accuracy: 100,
-			time:
-				testMode === "time"
-					? timeLeft
-					: Math.round((Date.now() - (startTime || Date.now())) / 1000),
-	  };
+	const finalStats = calculateFinalStats();
+	const displayStats = showResults
+		? finalStats
+		: {
+				wpm: 0,
+				accuracy: 100,
+				time:
+					testMode === "time"
+						? timeLeft
+						: Math.round((Date.now() - (startTime || Date.now())) / 1000),
+		  };
 
 	return (
 		<div className="flex flex-col min-h-screen text-white">
@@ -355,7 +469,7 @@ const displayStats = showResults
 					<div className="text-6xl font-light text-green-600">
 						{displayStats.wpm}
 					</div>
-					<div className="text-xs text-gray-500 uppercase tracking-widest">
+					<div className="text-xs tracking-widest text-gray-500 uppercase">
 						wpm
 					</div>
 				</div>
@@ -363,7 +477,7 @@ const displayStats = showResults
 					<div className="text-6xl font-light text-green-600">
 						{displayStats.accuracy}%
 					</div>
-					<div className="text-xs text-gray-500 uppercase tracking-widest">
+					<div className="text-xs tracking-widest text-gray-500 uppercase">
 						acc
 					</div>
 				</div>
@@ -371,7 +485,7 @@ const displayStats = showResults
 					<div className="text-6xl font-light text-green-600">
 						{testMode === "time" ? timeLeft : displayStats.time}
 					</div>
-					<div className="text-xs text-gray-500 uppercase tracking-widest">
+					<div className="text-xs tracking-widest text-gray-500 uppercase">
 						{testMode === "time" ? "time" : "sec"}
 					</div>
 				</div>
@@ -388,143 +502,144 @@ const displayStats = showResults
 				className="mx-auto"
 			/>
 
-{/* Typing Area */}
-<div
-	ref={testAreaRef}
-	className="relative mx-auto max-w-6xl w-full mb-8 mt-5"
-	style={{ height: "176px" }}
->
-	{showResults ? (
-		<div className="text-center mt-10">
-			<div className="text-3xl text-green-500 mb-4">Test Complete!</div>
-			<div className="grid grid-cols-2 gap-8 max-w-md mx-auto">
-				<div className="text-center">
-					<div className="text-4xl font-light text-green-500">
-						{finalStats.wpm}
-					</div>
-					<div className="text-sm text-gray-500">WPM</div>
-				</div>
-				<div className="text-center">
-					<div className="text-4xl font-light text-green-500">
-						{finalStats.accuracy}%
-					</div>
-					<div className="text-sm text-gray-500">Accuracy</div>
-				</div>
-				<div className="text-center">
-					<div className="text-2xl font-light text-gray-400">
-						{finalStats.correctChars}
-					</div>
-					<div className="text-sm text-gray-500">Correct</div>
-				</div>
-				<div className="text-center">
-					<div className="text-2xl font-light text-gray-400">
-						{finalStats.incorrectChars}
-					</div>
-					<div className="text-sm text-gray-500">Incorrect</div>
-				</div>
-			</div>
-			<button
-				onClick={resetTest}
-				className="mt-6 px-4 py-2 text-green-500 hover:text-green-700 rounded transition-colors"
+			{/* Typing Area */}
+			<div
+				ref={testAreaRef}
+				className="relative w-full max-w-6xl mx-auto mt-5 mb-8"
+				style={{ height: "176px" }}
 			>
-				Try Again
-			</button>
-		</div>
-	) : (
-		<>
-			{/* Scrollable container */}
-			<div 
-				className="h-full overflow-hidden relative"
-				style={{ height: "175px" }}
-			>
-				<div 
-					ref={textContainerRef}
-					className="text-[2rem] leading-relaxed relative text-gray-500 p-6 rounded-lg backdrop-blur-sm transition-transform duration-200 ease-out"
-					style={{ transform: `translateY(${scrollOffset}px)` }}
-				>
-					<div className="flex flex-wrap">
-						{words
-							.map((word, wordIndex) => (
-								<React.Fragment key={wordIndex}>
-									<span
-										ref={wordIndex === currentWordIndex ? currentWordRef : null}
-										className={`inline-block mr-3 mb-1 ${
-											wordIndex === currentWordIndex ? 'current-word' : ''
-										}`}
-									>
-										{word.split("").map((char, charIndex) => {
-											let className = "text-gray-500";
-
-											if (
-												charStates[wordIndex] &&
-												charStates[wordIndex][charIndex]
-											) {
-												const status =
-													charStates[wordIndex][charIndex].status;
-												if (status === "correct") {
-													className = "text-gray-300";
-												} else if (status === "incorrect") {
-													className = "text-red-500";
-												} else if (status === "missing") {
-													className = "text-red-300 bg-red-500/10";
+				{showResults ? (
+					<div className="mt-10 text-center">
+						<div className="mb-4 text-3xl text-green-500">Test Complete!</div>
+						<div className="grid max-w-md grid-cols-2 gap-8 mx-auto">
+							<div className="text-center">
+								<div className="text-4xl font-light text-green-500">
+									{finalStats.wpm}
+								</div>
+								<div className="text-sm text-gray-500">WPM</div>
+							</div>
+							<div className="text-center">
+								<div className="text-4xl font-light text-green-500">
+									{finalStats.accuracy}%
+								</div>
+								<div className="text-sm text-gray-500">Accuracy</div>
+							</div>
+							<div className="text-center">
+								<div className="text-2xl font-light text-gray-400">
+									{finalStats.correctChars}
+								</div>
+								<div className="text-sm text-gray-500">Correct</div>
+							</div>
+							<div className="text-center">
+								<div className="text-2xl font-light text-gray-400">
+									{finalStats.incorrectChars}
+								</div>
+								<div className="text-sm text-gray-500">Incorrect</div>
+							</div>
+						</div>
+						<button
+							onClick={resetTest}
+							className="px-4 py-2 mt-6 text-green-500 transition-colors rounded hover:text-green-700"
+						>
+							Try Again
+						</button>
+					</div>
+				) : (
+					<>
+						{/* Scrollable container */}
+						<div
+							className="relative h-full overflow-hidden"
+							style={{ height: "175px" }}
+						>
+							<div
+								ref={textContainerRef}
+								className="text-[2rem] leading-relaxed relative text-gray-500 p-6 rounded-lg backdrop-blur-sm transition-transform duration-200 ease-out"
+								style={{ transform: `translateY(${scrollOffset}px)` }}
+							>
+								<div className="flex flex-wrap">
+									{words.map((word, wordIndex) => (
+										<React.Fragment key={wordIndex}>
+											<span
+												ref={
+													wordIndex === currentWordIndex ? currentWordRef : null
 												}
-											}
+												className={`inline-block mr-3 mb-1 ${
+													wordIndex === currentWordIndex ? "current-word" : ""
+												}`}
+											>
+												{word.split("").map((char, charIndex) => {
+													let className = "text-gray-500";
 
-											// Current character cursor
-											if (
-												wordIndex === currentWordIndex &&
-												charIndex === currentCharIndex &&
-												isActive
-											) {
-												className +=
-													" border-l-2 border-green-500 animate-pulse";
-											}
+													if (
+														charStates[wordIndex] &&
+														charStates[wordIndex][charIndex]
+													) {
+														const status =
+															charStates[wordIndex][charIndex].status;
+														if (status === "correct") {
+															className = "text-gray-300";
+														} else if (status === "incorrect") {
+															className = "text-red-500";
+														} else if (status === "missing") {
+															className = "text-red-300 bg-red-500/10";
+														}
+													}
 
-											return (
-												<span key={charIndex} className={className}>
-													{char}
-												</span>
-											);
-										})}
-										{/* Show cursor at end of current word if needed */}
-										{wordIndex === currentWordIndex &&
-											currentCharIndex >= word.length &&
-											isActive && (
-												<span className="border-l-2 border-green-500 animate-pulse ml-0.5"></span>
-											)}
-									</span>
-								</React.Fragment>
-							))}
-					</div>
-				</div>
+													// Current character cursor
+													if (
+														wordIndex === currentWordIndex &&
+														charIndex === currentCharIndex &&
+														isActive
+													) {
+														className +=
+															" border-l-2 border-green-500 animate-pulse";
+													}
+
+													return (
+														<span key={charIndex} className={className}>
+															{char}
+														</span>
+													);
+												})}
+												{/* Show cursor at end of current word if needed */}
+												{wordIndex === currentWordIndex &&
+													currentCharIndex >= word.length &&
+													isActive && (
+														<span className="border-l-2 border-green-500 animate-pulse ml-0.5"></span>
+													)}
+											</span>
+										</React.Fragment>
+									))}
+								</div>
+							</div>
+						</div>
+
+						{/* Hidden input */}
+						<input
+							ref={inputRef}
+							className="absolute inset-0 z-10 opacity-0 cursor-default"
+							value={userInput}
+							onChange={() => {}}
+							onKeyDown={handleKeyPress}
+							onBlur={() => {
+								if (!showResults) {
+									setTimeout(() => inputRef.current?.focus(), 0);
+								}
+							}}
+							autoComplete="off"
+							autoCapitalize="off"
+							autoCorrect="off"
+							spellCheck={false}
+						/>
+					</>
+				)}
 			</div>
-
-			{/* Hidden input */}
-			<input
-				ref={inputRef}
-				className="absolute inset-0 opacity-0 cursor-default z-10"
-				value={userInput}
-				onChange={() => {}}
-				onKeyDown={handleKeyPress}
-				onBlur={() => {
-					if (!showResults) {
-						setTimeout(() => inputRef.current?.focus(), 0);
-					}
-				}}
-				autoComplete="off"
-				autoCapitalize="off"
-				autoCorrect="off"
-				spellCheck={false}
-			/>
-		</>
-	)}
-</div>
 
 			{/* Footer Controls */}
-			<div className="flex items-center justify-center space-x-6 mt-auto pb-8">
+			<div className="flex items-center justify-center pb-8 mt-auto space-x-6">
 				<button
 					onClick={resetTest}
-					className="flex items-center space-x-2 text-gray-500 hover:text-green-500 transition-colors text-sm"
+					className="flex items-center space-x-2 text-sm text-gray-500 transition-colors hover:text-green-500"
 				>
 					<RefreshCw size={16} />
 					<span>restart test</span>
