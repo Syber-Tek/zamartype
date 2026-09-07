@@ -1,91 +1,183 @@
-Zamartype 🚀
-A modern web application project built with cutting-edge technologies for a robust and scalable user experience.
+# Zamar⚡Type
 
-🌟 Overview
-Zamartype is a contemporary web application project, meticulously structured for development efficiency and long-term maintainability. Leveraging a modern front-end toolkit, it's designed to deliver a dynamic and responsive user experience. This project likely utilizes a JavaScript framework like React, powered by Vite for a lightning-fast development environment, and styled with the utility-first approach of Tailwind CSS.
+[![React](https://img.shields.io/badge/React-19.1.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-6.3.5-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.1.8-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![React Router](https://img.shields.io/badge/React_Router-7.6.1-CA4245?style=for-the-badge&logo=reactrouter&logoColor=white)](https://reactrouter.com/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 
-Our aim is to provide a seamless and engaging digital experience, built on a solid foundation of web development best practices and modern tooling.
+> A minimalist, high-performance, responsive web application for testing and improving typing speed and accuracy. Built with React 19, Vite, Tailwind CSS v4, and Lucide Icons.
 
-✨ Key Features
-While the specific functionalities are embedded within the source code, Zamartype inherently boasts capabilities common to projects of its architectural style:
+---
 
-Responsive Design: 📱 Crafted with Tailwind CSS, ensuring a beautiful and functional layout across all devices, from mobile phones to large desktops.
+## ⚡ Overview
 
-Modern Front-end Stack: ⚛️ Built upon a cutting-edge JavaScript framework (likely React) and optimized for performance with Vite.
+**Zamar⚡Type** is a modern typing simulator inspired by minimalist typing platforms like Monkeytype. Designed for speed, precision, and a smooth user experience, Zamar⚡Type provides real-time feedback on Words Per Minute (WPM), typing accuracy, character correctness, and test timing.
 
-Component-Based Architecture: 🧩 Organized into reusable components, promoting modularity, reusability, and simplified maintenance.
+Featuring tactile audio feedback, customizable test modes (**Time** and **Word count**), dynamic word scrolling, error tracking, and instant keyboard shortcuts, Zamar⚡Type helps users measure and hone their typing skills effortlessly.
 
-Efficient & Scalable Styling: 🎨 Employs Tailwind CSS for a utility-first approach to styling, enabling rapid UI development and consistent visual identity.
+---
 
-Code Quality Assurance: 🧹 Integrated with ESLint (eslint.config.js) to maintain consistent code style and enforce best practices throughout the codebase.
+## ✨ Key Features
 
-🚀 Getting Started
-Follow these simple steps to set up Zamartype on your local development machine.
+- ⏱️ **Flexible Test Modes**:
+  - **Time Mode**: Test speed against countdown timers (**15s**, **30s**, **60s**, or **120s**).
+  - **Words Mode**: Test accuracy over fixed word quantities (**10**, **25**, **50**, or **100** words).
+- 📊 **Real-Time Analytics & Detailed Breakdown**:
+  - Live calculation of **Gross & Net WPM** (Words Per Minute).
+  - Accurate character-level **Accuracy (%)** tracking.
+  - Comprehensive summary of **Correct**, **Incorrect**, and **Total** characters upon test completion.
+- 🎵 **Auditory Typing Feedback**: Real-time mechanical keyboard sound effect (`type.wav`) triggered on keypresses.
+- 🎨 **Visual Feedback & Error Highlighting**:
+  - Real-time character status color indicators (untyped, correct, incorrect, missing).
+  - Smooth animated cursor position tracking.
+  - Enhanced backspace support (including hold-to-delete across word boundaries).
+- 📜 **Auto-Scrolling Viewport**: Keeps the current active line in focus by smoothly shifting lines as you type.
+- ⌨️ **Keyboard Navigation & Quick Controls**: Instant restart via `Tab` or `Esc` keys and auto-refocusing input handler.
+- 🌙 **Minimalist Dark Theme**: Sleek dark aesthetic (`#1a1a2e` background) powered by `Space Mono` typography.
 
-Prerequisites
-Ensure you have the following software installed:
+---
 
-Node.js (LTS version is highly recommended)
+## 🛠️ Tech Stack
 
-npm (Node Package Manager, typically included with Node.js) or Yarn
+| Category | Technology | Description |
+| :--- | :--- | :--- |
+| **Frontend Framework** | [React 19](https://react.dev/) | Component-based UI library |
+| **Build Tool** | [Vite 6](https://vitejs.dev/) | Next-generation frontend tooling |
+| **Styling** | [Tailwind CSS v4](https://tailwindcss.com/) | Utility-first CSS framework |
+| **Routing** | [React Router v7](https://reactrouter.com/) | Declarative routing library |
+| **Icons** | [Lucide React](https://lucide.dev/) | Clean, consistent UI icon set |
+| **Typography** | [Google Fonts](https://fonts.google.com/) | Space Mono & Inter fonts |
+| **Audio** | HTML5 Audio API | Real-time typing keypress audio feedback |
+| **Linting** | [ESLint 9](https://eslint.org/) | Code quality & standards enforcement |
 
-Installation
-Clone the repository:
+---
 
-git clone https://github.com/Syber-Tek/zamartype.git
-cd zamartype
+## 📁 Project Structure
 
-Install dependencies:
+```
+zamartype/
+├── public/                  # Static public assets
+├── src/
+│   ├── assets/
+│   │   ├── icon.png         # Application brand logo icon
+│   │   ├── react.svg        # React logo SVG
+│   │   └── type.wav         # Mechanical keypress audio effect
+│   ├── components/
+│   │   ├── Logo.jsx         # Header branding & logo component
+│   │   ├── Navbar.jsx       # Test mode & duration selection bar
+│   │   ├── TypingSimulator.jsx # Core typing engine, state management, timer & stats
+│   │   └── WordBanks.jsx    # Word list generator dictionary
+│   ├── App.jsx              # Application root component
+│   ├── index.css            # Global CSS, font imports & Tailwind styles
+│   └── main.jsx             # React entry point & DOM mount
+├── .gitignore               # Git ignored patterns
+├── eslint.config.js         # ESLint 9 configuration
+├── index.html               # HTML entry document
+├── package.json             # NPM package scripts and dependencies
+├── tailwind.config.js       # Tailwind CSS configuration
+└── vite.config.js           # Vite build configuration
+```
 
-npm install
-# OR
-# yarn install
+---
 
-Usage
-Development Server
-To start the local development server with hot-reloading:
+## 🔑 Environment Variables
 
+Zamar⚡Type is a pure client-side React web application and does **not require any environment variables** to run out of the box.
+
+If custom backend APIs or environment configs are added in the future, create a `.env` file in the project root:
+
+```env
+# Optional Environment Variables
+VITE_APP_TITLE=ZamarType
+```
+
+---
+
+## 🚀 Getting Started
+
+Follow these steps to set up and run Zamar⚡Type locally.
+
+### Prerequisites
+
+Ensure you have the following installed:
+- [Node.js](https://nodejs.org/) (v18.0.0 or higher recommended)
+- `npm` (included with Node.js) or `yarn` / `pnpm`
+
+### Installation
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/Syber-Tek/zamartype.git
+   cd zamartype
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+### Development Server
+
+Start the Vite local development server with hot module replacement (HMR):
+
+```bash
 npm run dev
-# OR
-# yarn dev
+```
 
-The application will typically be accessible at http://localhost:5173. The port might vary if 5173 is already in use.
+Open your browser and navigate to `http://localhost:5173`.
 
-Build for Production
-To compile and optimize the application for a production environment:
+### Production Build
 
+Compile and bundle the project for production:
+
+```bash
 npm run build
-# OR
-# yarn build
+```
 
-The optimized build artifacts will be generated in the dist/ directory (or a similar location configured in vite.config.js).
+The optimized build files will be placed in the `dist/` directory, ready to deploy to platforms like Vercel, Netlify, or GitHub Pages.
 
-Preview Production Build (Optional)
-You can preview the built production bundle locally to ensure everything is working as expected before deployment:
+### Preview Production Build
 
+Test and preview the production build locally:
+
+```bash
 npm run preview
-# OR
-# yarn preview
+```
 
-🤝 Contributing
-We welcome contributions from the community! If you'd like to contribute to Zamartype, please follow these guidelines:
+### Code Quality & Linting
 
-Fork the repository.
+Run ESLint to check for code formatting and potential code issues:
 
-Create a new branch: git checkout -b feature/your-feature-name
+```bash
+npm run lint
+```
 
-Implement your changes.
+---
 
-Commit your changes: git commit -m 'feat: Add a new exciting feature' (Please use conventional commits if possible)
+## ⌨️ Keyboard Shortcuts
 
-Push to your branch: git push origin feature/your-feature-name
+| Shortcut | Action |
+| :--- | :--- |
+| `Tab` / `Esc` | Instant restart of current typing test |
+| `Space` | Complete word and advance to next word |
+| `Backspace` | Delete character / move back to previous character or word |
+| `Hold Backspace` | Rapidly delete text across characters |
 
-Open a Pull Request to the main repository.
+---
 
-Please ensure your code adheres to the project's existing coding standards and passes any relevant tests.
+## 🤝 Contributing
 
-📄 License
-This project is proudly open-sourced under the MIT License. For full details, please refer to the LICENSE file in the root of the repository.
+Contributions, feature requests, and bug reports are welcome!
 
-📞 Contact
-For any questions, suggestions, or support, please open an issue on the GitHub issues page.
+1. Fork the Project repository
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for details.
